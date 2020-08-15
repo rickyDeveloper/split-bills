@@ -1,11 +1,16 @@
-# split-bills
+# A initial attempt to solve the splitting of bills problem
 
 Objective:-
 
-1) Capture the bill payments of N persons
-2) Calculate the total amount each person has to other person
-3) Reduce the total number of transactions.
+1) Capture the bill payments of N persons.  Few persons can make a payment for bill and few may not pay.
+2) Calculate the total amount each person owe to other person
+3) Reduce the total number of transactions. 
 
+
+Algorithm:-
+
+1) Created a Graph to capture the bill payment and amount due by each person 
+2) Used a customized Breadth First Traversal technique to reduce the transaction count. 
 
 
 How to test:-

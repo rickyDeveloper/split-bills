@@ -18,7 +18,7 @@ public class BillServiceImpl implements BillService {
 
   @Autowired
   public BillServiceImpl(BillsCalculator billsCalculator) {
-    this.billsCalculator =  billsCalculator;
+    this.billsCalculator = billsCalculator;
   }
 
   @Override
@@ -49,11 +49,11 @@ public class BillServiceImpl implements BillService {
   /**
    * This method take the receiver and payer and then calculates the net payable
    * In addition, it creates a payment graph with payment edges.
+   *
    * @param toReceiveMap
    * @param toPayMap
    */
-  private void processContributions(Map<String, Double> toReceiveMap,
-                               Map<String, Double> toPayMap) {
+  private void processContributions(Map<String, Double> toReceiveMap, Map<String, Double> toPayMap) {
     for (Entry<String, Double> toReceiveEntry : toReceiveMap.entrySet()) {
       String paymentReceiver = toReceiveEntry.getKey();
       double amountToBeReceived = toReceiveEntry.getValue();
@@ -69,8 +69,7 @@ public class BillServiceImpl implements BillService {
             amountToBeReceived = 0.0D;
           }
 
-          billsCalculator.registerTransaction(paymentReceiver, paymentSender,
-                                              amountToBePaid);
+          billsCalculator.registerTransaction(paymentReceiver, paymentSender, amountToBePaid);
 
           amountToBeReceived -= amountToBePaid;
           entry.setValue(entry.getValue() - amountToBePaid);

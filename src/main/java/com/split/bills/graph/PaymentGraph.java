@@ -4,7 +4,6 @@ import static com.split.bills.graph.Direction.INCOMING;
 import static com.split.bills.graph.Direction.OUTGOING;
 import static com.split.bills.graph.Direction.ROOT;
 
-import lombok.Builder;
 import lombok.Data;
 import org.springframework.stereotype.Component;
 
@@ -27,16 +26,16 @@ import java.util.Set;
 public class PaymentGraph {
   private Map<String, Map<String, Double>> adjPaymentEdges;
 
-  public PaymentGraph() { adjPaymentEdges = new HashMap<>(); }
+  public PaymentGraph() {
+    adjPaymentEdges = new HashMap<>();
+  }
 
-  public void addPaymentEdges(String paymentReceiver, String paymentSender,
-                              double amount) {
+  public void addPaymentEdges(String paymentReceiver, String paymentSender, double amount) {
     addOrUpdatePaymentEdge(paymentReceiver, paymentSender, amount);
     addOrUpdatePaymentEdge(paymentSender, paymentReceiver, -amount);
   }
 
-  private void addOrUpdatePaymentEdge(String fromNode, String toNode,
-      double amount) {
+  private void addOrUpdatePaymentEdge(String fromNode, String toNode, double amount) {
     Map<String, Double> paymentEdges;
     if (adjPaymentEdges.containsKey(fromNode)) {
       paymentEdges = adjPaymentEdges.get(fromNode);
@@ -58,31 +57,23 @@ public class PaymentGraph {
     adjPaymentEdges.entrySet().forEach(root -> {
       Map<String, Double> paymentMap = root.getValue();
 
-      paymentMap.entrySet()
-          .stream()
-          .filter(p -> p.getValue() > 0.0D)
-          .forEach(p -> {
-            traverseGraphAndUpdateTransaction(root.getKey(), p.getKey());
-          });
+      paymentMap.entrySet().stream().filter(p -> p.getValue() > 0.0D).forEach(p -> {
+        traverseGraphAndUpdateTransaction(root.getKey(), p.getKey());
+      });
     });
   }
 
   /**
    * This method is for the transaction summary
+   *
    * @return
    */
   public String getTransactionSummary() {
     final StringBuilder summary = new StringBuilder();
 
     adjPaymentEdges.entrySet().stream().forEach(e -> {
-      e.getValue()
-          .entrySet()
-          .stream()
-          .filter(n -> n.getValue() > 0.0d)
-          .forEach(n
-              -> summary.append(String.format("%s pays Rs. %.2f to %s, ",
-              n.getKey(), n.getValue(),
-              e.getKey())));
+      e.getValue().entrySet().stream().filter(n -> n.getValue() > 0.0d)
+          .forEach(n -> summary.append(String.format("%s pays Rs. %.2f to %s, ", n.getKey(), n.getValue(), e.getKey())));
     });
 
     adjPaymentEdges = new HashMap<>(); // I am doing this only for testing purpose. Want to avoid restart.
@@ -93,13 +84,13 @@ public class PaymentGraph {
   /**
    * Once we find a path whether transaction amount can be reduced we
    * will udpate the amount for all the nodes which comes in the traversed path.
+   *
    * @param startNode
    * @param targetNode
    * @param pathNodes
    * @param amount
    */
-  private void applyDiscount(String startNode, String targetNode,
-                             String pathNodes, double amount) {
+  private void applyDiscount(String startNode, String targetNode, String pathNodes, double amount) {
     Double currentValue = adjPaymentEdges.get(startNode).get(targetNode);
     adjPaymentEdges.get(startNode).put(targetNode, currentValue - amount);
 
@@ -121,6 +112,7 @@ public class PaymentGraph {
   /**
    * In this method we are doing a Breadth First Traversal and then updating the edges
    * if there is a payment path from currentNode to rootNode
+   *
    * @param rootNode
    * @param currentNode
    */
@@ -128,34 +120,24 @@ public class PaymentGraph {
     Set<String> visited = new HashSet<>();
     LinkedList<Path> queue = new LinkedList<>();
 
-    queue.add(Path.builder()
-        .name(currentNode)
-        .value(0.0D)
-        .direction(ROOT)
-        .pathNodes(currentNode)
-        .build());
+    queue.add(Path.builder().name(currentNode).value(0.0D).direction(ROOT).pathNodes(currentNode).build());
     visited.add(currentNode);
 
     while (queue.size() != 0) {
       Path path = queue.poll();
 
-      Iterator<Entry<String, Double>> it =
-          adjPaymentEdges.get(path.name).entrySet().iterator();
+      Iterator<Entry<String, Double>> it = adjPaymentEdges.get(path.name).entrySet().iterator();
 
       while (it.hasNext()) {
         Entry<String, Double> adjNode = it.next();
 
-        if (path.name.equals(currentNode) &&
-            adjNode.getKey().equals(rootNode)) {
+        if (path.name.equals(currentNode) && adjNode.getKey().equals(rootNode)) {
           continue;
         }
 
-        if (!visited.contains(adjNode.getKey()) &&
-            adjNode.getValue() != 0.0D) {
+        if (!visited.contains(adjNode.getKey()) && adjNode.getValue() != 0.0D) {
           if (adjNode.getKey().equals(rootNode)) {
-            applyDiscount(rootNode, currentNode,
-                path.pathNodes + "#" + rootNode,
-                path.value);
+            applyDiscount(rootNode, currentNode, path.pathNodes + "#" + rootNode, path.value);
             break;
           } else {
             processPaymentEdge(path, visited, queue, adjNode);
@@ -167,49 +149,31 @@ public class PaymentGraph {
 
   /**
    * Process the current payment edge and decide whether we need to traverse further or not.
+   *
    * @param path
    * @param visited
    * @param queue
    * @param adjNode
    */
-  private void processPaymentEdge(Path path, Set<String> visited, LinkedList<Path> queue,  Entry<String, Double> adjNode) {
+  private void processPaymentEdge(Path path, Set<String> visited, LinkedList<Path> queue, Entry<String, Double> adjNode) {
     switch (path.direction) {
       case ROOT:
         visited.add(adjNode.getKey());
-        queue.add(Path.builder()
-            .name(adjNode.getKey())
-            .value(adjNode.getValue())
-            .direction(adjNode.getValue() > 0.0D
-                ? INCOMING
-                : OUTGOING)
-            .pathNodes(path.pathNodes + "#" +
-                adjNode.getKey())
-            .build());
+        queue.add(Path.builder().name(adjNode.getKey()).value(adjNode.getValue()).direction(adjNode.getValue() > 0.0D ? INCOMING : OUTGOING)
+            .pathNodes(path.pathNodes + "#" + adjNode.getKey()).build());
         break;
       case INCOMING:
         if (adjNode.getValue() > 0.0D) {
           visited.add(adjNode.getKey());
-          queue.add(
-              Path.builder()
-                  .name(adjNode.getKey())
-                  .value(Math.min(path.value, adjNode.getValue()))
-                  .direction(INCOMING)
-                  .pathNodes(path.pathNodes + "#" +
-                      adjNode.getKey())
-                  .build());
+          queue.add(Path.builder().name(adjNode.getKey()).value(Math.min(path.value, adjNode.getValue())).direction(INCOMING)
+              .pathNodes(path.pathNodes + "#" + adjNode.getKey()).build());
         }
         break;
       case OUTGOING:
         if (adjNode.getValue() < 0.0D) {
           visited.add(adjNode.getKey());
-          queue.add(
-              Path.builder()
-                  .name(adjNode.getKey())
-                  .value(Math.max(path.value, adjNode.getValue()))
-                  .direction(OUTGOING)
-                  .pathNodes(path.pathNodes + "#" +
-                      adjNode.getKey())
-                  .build());
+          queue.add(Path.builder().name(adjNode.getKey()).value(Math.max(path.value, adjNode.getValue())).direction(OUTGOING)
+              .pathNodes(path.pathNodes + "#" + adjNode.getKey()).build());
         }
         break;
     }
