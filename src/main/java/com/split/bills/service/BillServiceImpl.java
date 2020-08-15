@@ -14,7 +14,12 @@ import java.util.Map.Entry;
 @Slf4j
 public class BillServiceImpl implements BillService {
 
-  @Autowired BillsCalculator billsCalculator;
+  private BillsCalculator billsCalculator;
+
+  @Autowired
+  public BillServiceImpl(BillsCalculator billsCalculator) {
+    this.billsCalculator =  billsCalculator;
+  }
 
   @Override
   public boolean addBill(BillDTO billDTO) {

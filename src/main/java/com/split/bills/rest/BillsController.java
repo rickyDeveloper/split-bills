@@ -14,13 +14,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Slf4j
 public class BillsController {
-  @Autowired BillService billService;
+  private BillService billService;
+
+  @Autowired
+  public BillsController(BillService billService) {
+    this.billService  = billService;
+  }
 
   @PostMapping("/bills")
   @ResponseBody
   public String addBill(@NonNull @RequestBody BillDTO billDTO) {
     log.info("Adding a new bill ");
-    return billService.addBill(billDTO) ? "Successful added bill"
+    return billService.addBill(billDTO) ? "Successfully added bill"
                                         : "Failed to add bill";
   }
 

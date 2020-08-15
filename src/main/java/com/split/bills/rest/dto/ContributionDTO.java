@@ -1,8 +1,14 @@
 package com.split.bills.rest.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ContributionDTO {
   private String personName;
   private double liableAmount;
