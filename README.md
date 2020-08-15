@@ -1,4 +1,4 @@
-# A initial attempt to solve the splitting of bills problem
+# An attempt to solve the splitting of bills problem
 
 Objective:-
 
